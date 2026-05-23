@@ -1,4 +1,4 @@
-import { LayoutDashboard, Store, Package, RefreshCw, ArrowLeft, LogOut, Users, X } from 'lucide-react';
+import { LayoutDashboard, Store, Package, RefreshCw, ArrowLeft, LogOut, Users, X, CalendarDays } from 'lucide-react';
 
 interface AdminSidebarProps {
   activeMenu: string;
@@ -15,6 +15,7 @@ export default function AdminSidebar({
 }: AdminSidebarProps) {
   const menuItems = [
     { id: 'ringkasan', name: 'Ringkasan Omnichannel', icon: LayoutDashboard },
+    { id: 'harian', name: 'Laporan Harian', icon: CalendarDays },
     { id: 'offline', name: 'Penjualan Offline', icon: Store },
     { id: 'inventaris', name: 'Manajemen Inventaris', icon: Package },
     { id: 'orders', name: 'Pesanan & Pengiriman', icon: RefreshCw },

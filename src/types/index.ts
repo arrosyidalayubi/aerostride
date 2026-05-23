@@ -36,3 +36,15 @@ export interface CustomerData {
   phone: string;
   joinDate: string;
 }
+
+export interface DailySale {
+  id: string;
+  date: string;         // Tanggal (ex: "01-01-2026")
+  month: string;        // Bulan (ex: "Januari")
+  trxJakarta: number;   // Transaksi Jakarta
+  omzetJakarta: number; // Omzet Jakarta (IDR)
+  trxBandung: number;   // Transaksi Bandung
+  omzetBandung: number; // Omzet Bandung (IDR)
+  totalTrx: number;     // Total Transaksi
+  totalOmzet: number;   // Total Omzet Offline (IDR)
+}
