@@ -26,6 +26,9 @@ export default function AdminDashboard({
   const [offlineItemCode, setOfflineItemCode] = useState('INV-001');
   const [offlineQty, setOfflineQty] = useState(1);
   const [offlineCabang, setOfflineCabang] = useState<'Jakarta' | 'Bandung'>('Jakarta');
+  const [newCustName, setNewCustName] = useState('');
+  const [newCustEmail, setNewCustEmail] = useState('');
+  const [newCustPhone, setNewCustPhone] = useState('');
 
   // --- HANDLER CRUD MANAJEMEN INVENTARIS ---
   const handleAddProduct = (e: React.FormEvent) => {
@@ -88,6 +91,36 @@ export default function AdminDashboard({
     handleUpdateStock(offlineItemCode, targetProduct.stock - offlineQty);
     // 2. Catat log penjualan offline
     onUpdateOfflineSales([...offlineSales, newSale]);
+  };
+
+  // --- HANDLER CRUD PELANGGAN MANUAl ---
+  const handleAddCustomer = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Generate ID unik berurut
+    const newId = `CUST-00${customers.length + 1}`;
+    
+    // Dapatkan tanggal hari ini secara otomatis (Format: 23 Mei 2026)
+    const today = new Date();
+    const formattedDate = today.toLocaleDateString('id-ID', { 
+      day: 'numeric', month: 'long', year: 'numeric' 
+    });
+
+    const newCustomer = {
+      id: newId,
+      name: newCustName,
+      email: newCustEmail,
+      phone: newCustPhone,
+      joinDate: formattedDate
+    };
+
+    // Update state global melalui props (Simulasi Insert Database)
+    onUpdateCustomers([newCustomer, ...customers]); // Data baru di paling atas
+    
+    // Kosongkan form setelah sukses
+    setNewCustName('');
+    setNewCustEmail('');
+    setNewCustPhone('');
   };
 
   // --- HANDLER UPDATE STATUS DELIVERY ORDER ---
@@ -342,10 +375,25 @@ export default function AdminDashboard({
         {activeMenu === 'customers' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h1 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">Manajemen Pelanggan</h1>
-              <button className="bg-black text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors cursor-pointer">
-                + Tambah Pelanggan Manual
-              </button>
+              <h1 className="text-3xl font-black text-gray-900 tracking-tighter uppercase mb-6">Manajemen Pelanggan</h1>
+              
+              <form onSubmit={handleAddCustomer} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-6">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Nama Lengkap</label>
+                  <input type="text" value={newCustName} onChange={(e) => setNewCustName(e.target.value)} placeholder="Budi Santoso" className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">Alamat Email</label>
+                  <input type="email" value={newCustEmail} onChange={(e) => setNewCustEmail(e.target.value)} placeholder="arrosyid@gmail.com" className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm" required />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 uppercase mb-2">No. Handphone</label>
+                  <input type="tel" value={newCustPhone} onChange={(e) => setNewCustPhone(e.target.value)} placeholder="081234..." className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm" required />
+                </div>
+                <button type="submit" className="bg-black text-white p-3.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 cursor-pointer hover:bg-gray-800">
+                  <Plus className="w-4 h-4" /> Tambah Manual
+                </button>
+              </form>
             </div>
 
             <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
