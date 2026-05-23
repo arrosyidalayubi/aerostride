@@ -4,14 +4,13 @@ import type { Product, Order, OfflineSale, CustomerData, DailySale } from '../ty
 export function useAppData() {
   const [user, setUser] = useState<{ name: string; role: 'admin' | 'customer' } | null>(null);
 
-  // 100% Kosong. Menunggu suntikan murni dari API Cloudflare D1
+  // 100% KOSONG - Siap menerima injeksi dari Cloudflare D1
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [offlineSales, setOfflineSales] = useState<OfflineSale[]>([]);
   const [customers, setCustomers] = useState<CustomerData[]>([]);
   const [dailySales, setDailySales] = useState<DailySale[]>([]);
 
-  // Otomatis Fetching ke Server Cloudflare
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
@@ -31,18 +30,12 @@ export function useAppData() {
     fetchDashboardData();
   }, []);
 
-  // Logika Checkout Dipindah ke Sini
   const handleOnlineCheckout = async (onSuccess: () => void, onError: (msg: string) => void) => {
-    if (!user) {
-      onError('Autentikasi Diperlukan: Silakan masuk terlebih dahulu.');
-      return;
-    }
+    if (!user) { onError('Autentikasi Diperlukan: Silakan masuk terlebih dahulu.'); return; }
+    
     const targetSku = 'AST-01'; 
     const targetProduct = products.find(p => p.id === targetSku);
-    if (!targetProduct) {
-      onError('Produk tidak ditemukan atau belum di-load.');
-      return;
-    }
+    if (!targetProduct || targetProduct.stock < 1) { onError('Produk tidak ditemukan atau stok habis.'); return; }
 
     try {
       const response = await fetch('/api/checkout', {
@@ -60,7 +53,7 @@ export function useAppData() {
       if (resProd.ok) setProducts(await resProd.json());
       onSuccess();
     } catch {
-      onError('Terjadi kesalahan pada server.');
+      onError('Terjadi kesalahan pada server D1.');
     }
   };
 
