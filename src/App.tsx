@@ -23,7 +23,7 @@ export default function App() {
   const { 
     user, setUser, products, setProducts, orders, setOrders, 
     offlineSales, setOfflineSales, customers, setCustomers, 
-    dailySales, setDailySales, handleOnlineCheckout 
+    dailySales, handleOnlineCheckout 
   } = useAppData();
 
   const handleViewChange = (view: 'store' | 'admin' | 'customer') => {
@@ -94,7 +94,7 @@ export default function App() {
               activeMenu={activeAdminMenu} products={products} orders={orders} 
               offlineSales={offlineSales} customers={customers} dailySales={dailySales}
               onUpdateProducts={setProducts} onUpdateOrders={setOrders} onUpdateOfflineSales={setOfflineSales} 
-              onUpdateCustomers={setCustomers} onUpdateDailySales={setDailySales}
+              onUpdateCustomers={setCustomers}
             />
           </main>
         </div>
