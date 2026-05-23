@@ -94,13 +94,11 @@ export default function AdminDashboard({
   };
 
   // --- HANDLER CRUD PELANGGAN MANUAl ---
-  const handleAddCustomer = (e: React.FormEvent) => {
+  const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Generate ID unik berurut
+    // Generate ID & Tanggal
     const newId = `CUST-00${customers.length + 1}`;
-    
-    // Dapatkan tanggal hari ini secara otomatis (Format: 23 Mei 2026)
     const today = new Date();
     const formattedDate = today.toLocaleDateString('id-ID', { 
       day: 'numeric', month: 'long', year: 'numeric' 
@@ -114,15 +112,32 @@ export default function AdminDashboard({
       joinDate: formattedDate
     };
 
-    // Update state global melalui props (Simulasi Insert Database)
-    onUpdateCustomers([newCustomer, ...customers]); // Data baru di paling atas
-    
-    // Kosongkan form setelah sukses
-    setNewCustName('');
-    setNewCustEmail('');
-    setNewCustPhone('');
-  };
+    try {
+      // 1. Tembak data (POST) ke Backend API Cloudflare
+      const response = await fetch('/api/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCustomer)
+      });
 
+      if (!response.ok) {
+        throw new Error('Gagal menyimpan data ke Database Server');
+      }
+
+      // 2. Jika server sukses merespons, baru kita update UI di layar
+      onUpdateCustomers([newCustomer, ...customers]);
+      
+      // 3. Kosongkan form
+      setNewCustName('');
+      setNewCustEmail('');
+      setNewCustPhone('');
+
+      alert('Berhasil! Data pelanggan telah disimpan secara permanen di Database.');
+
+    } catch (error) {
+      alert('Terjadi kesalahan koneksi ke server: ' + error);
+    }
+  };
   // --- HANDLER UPDATE STATUS DELIVERY ORDER ---
   const handleToggleOrderStatus = (orderId: string) => {
     const updated = orders.map(o => {
