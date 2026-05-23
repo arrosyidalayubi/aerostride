@@ -24,20 +24,55 @@ export default function OfflineSalesView({ products, offlineSales, onUpdateProdu
     }));
   };
 
-  const handleAddOfflineSale = (e: React.FormEvent) => {
+  // --- UBAH FUNGSI INI MENJADI ASYNC ---
+  const handleAddOfflineSale = async (e: React.FormEvent) => {
     e.preventDefault();
     const targetProduct = products.find(p => p.id === offlineItemCode);
+    
     if (!targetProduct || targetProduct.stock < offlineQty) {
-      alert('Transaksi Gagal: Stok tidak mencukupi!');
+      alert('Transaksi Gagal: Stok di layar tidak mencukupi!');
       return;
     }
+    
     const priceTotal = targetProduct.price * offlineQty;
+    
+    // Format tanggal misalnya: "Mei 2026"
+    const dateNow = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    
     const newSale: OfflineSale = {
-      id: `TRX-OFF-${offlineSales.length + 1}`, itemCode: offlineItemCode, productName: targetProduct.name,
-      qty: offlineQty, totalPrice: priceTotal, cabang: offlineCabang, date: 'Mei'
+      id: `TRX-OFF-${Date.now()}`, 
+      itemCode: offlineItemCode, 
+      productName: targetProduct.name,
+      qty: offlineQty, 
+      totalPrice: priceTotal, 
+      cabang: offlineCabang, 
+      date: dateNow
     };
-    handleUpdateStock(offlineItemCode, offlineQty);
-    onUpdateOfflineSales([newSale, ...offlineSales]); // Insert at top
+
+    try {
+      // 1. Tembakkan ke Database
+      const response = await fetch('/api/offline-sales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSale)
+      });
+
+      if (!response.ok) {
+        const resErr = await response.json();
+        throw new Error(resErr.error || 'Terjadi kegagalan di server D1');
+      }
+
+      // 2. Jika Database Sukses, Update Tampilan (UI)
+      handleUpdateStock(offlineItemCode, offlineQty); // Potong stok produk di layar
+      onUpdateOfflineSales([newSale, ...offlineSales]); // Tambah nota ke tabel
+      
+      // 3. Reset form jumlah barang
+      setOfflineQty(1);
+      alert('✅ Transaksi Offline Berhasil! Stok barang telah disinkronkan ke Database Pusat.');
+
+    } catch (error) {
+      alert(`❌ Kesalahan Sinkronisasi: ${error}`);
+    }
   };
 
   return (

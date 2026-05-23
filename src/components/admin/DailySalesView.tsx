@@ -74,10 +74,12 @@ export default function DailySalesView({ dailySales }: DailySalesViewProps) {
         </div>
 
         <div className="p-6 overflow-x-auto">
-          <table className="w-full text-left min-w-200">
+          <table className="w-full text-left min-w-225">
             <thead>
               <tr className="border-b border-gray-100 text-gray-400 text-xs font-bold uppercase">
                 <th className="pb-3">Tanggal</th>
+                <th className="pb-3 text-blue-500">Trx Online</th>
+                <th className="pb-3 text-blue-500">Omzet Online</th>
                 <th className="pb-3">Trx Jkt</th>
                 <th className="pb-3">Omzet Jkt</th>
                 <th className="pb-3">Trx Bdg</th>
@@ -89,7 +91,7 @@ export default function DailySalesView({ dailySales }: DailySalesViewProps) {
             <tbody className="text-sm divide-y divide-gray-50">
               {filteredSales.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-gray-400 font-medium">
+                  <td colSpan={9} className="py-8 text-center text-gray-400 font-medium">
                     Tidak ada data transaksi untuk bulan {selectedMonth} {selectedYear}.
                   </td>
                 </tr>
@@ -97,6 +99,8 @@ export default function DailySalesView({ dailySales }: DailySalesViewProps) {
                 filteredSales.map(d => (
                   <tr key={d.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="py-3 font-bold text-gray-900">{d.date}</td>
+                    <td className="py-3 font-bold text-blue-600 bg-blue-50/30">{d.trxOnline}</td>
+                    <td className="py-3 font-bold text-blue-600 bg-blue-50/30">Rp {d.omzetOnline.toLocaleString('id-ID')}</td>
                     <td className="py-3 text-gray-600">{d.trxJakarta}</td>
                     <td className="py-3 text-gray-600">Rp {d.omzetJakarta.toLocaleString('id-ID')}</td>
                     <td className="py-3 text-gray-600">{d.trxBandung}</td>

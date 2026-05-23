@@ -47,4 +47,6 @@ export interface DailySale {
   omzetBandung: number; // Omzet Bandung (IDR)
   totalTrx: number;     // Total Transaksi
   totalOmzet: number;   // Total Omzet Offline (IDR)
+  trxOnline: number;
+  omzetOnline: number;
 }

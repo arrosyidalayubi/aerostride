@@ -10,19 +10,24 @@ export function useAppData() {
   const [offlineSales, setOfflineSales] = useState<OfflineSale[]>([]);
   const [customers, setCustomers] = useState<CustomerData[]>([]);
   const [dailySales, setDailySales] = useState<DailySale[]>([]);
+  
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [resProd, resCust, resDaily] = await Promise.all([
+        const [resProd, resCust, resDaily, resOffline, resOrders] = await Promise.all([
           fetch('/api/products'),
           fetch('/api/customers'),
-          fetch('/api/daily-sales')
+          fetch('/api/daily-sales'),
+          fetch('/api/offline-sales'),
+          fetch('/api/orders')
         ]);
         
         if (resProd.ok) setProducts(await resProd.json());
         if (resCust.ok) setCustomers(await resCust.json());
         if (resDaily.ok) setDailySales(await resDaily.json());
+        if (resOffline.ok) setOfflineSales(await resOffline.json());
+        if (resOrders.ok) setOrders(await resOrders.json());
       } catch (error) {
         console.error("Gagal sinkronisasi data server:", error);
       }

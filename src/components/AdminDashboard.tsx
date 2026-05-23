@@ -29,7 +29,7 @@ export default function AdminDashboard({
       <div className="max-w-7xl mx-auto">
         
         {activeMenu === 'ringkasan' && (
-          <OverviewView orders={orders} dailySales={dailySales} />
+          <OverviewView dailySales={dailySales} />
         )}
 
         {activeMenu === 'harian' && (
