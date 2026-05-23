@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // <-- PERBAIKAN IMPORT
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import FeaturedProducts from './components/FeaturedProducts';
@@ -18,9 +18,34 @@ function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   
   // State User Session Manager
-  const [user, setUser] = useState<{ name: string; role: 'admin' | 'customer' } | null>(null);
+  const [user, setUser] = useState<{ name: string; role: 'admin' | 'customer' } | null>(() => {
+    const savedUser = localStorage.getItem('aerostride_session');
+    if (savedUser) {
+      try { return JSON.parse(savedUser); } catch { return null; }
+    }
+    return null;
+  });
 
-  // --- DATABASE STATE BROKER (IN-MEMORY DB SIMULATION) ---
+  const handleLogin = (loggedInUser: { name: string; role: 'admin' | 'customer' }) => {
+    setUser(loggedInUser);
+    localStorage.setItem('aerostride_session', JSON.stringify(loggedInUser)); // Simpan ke browser
+    setIsAuthModalOpen(false);
+    
+    if (loggedInUser.role === 'admin') {
+      setCurrentView('admin');
+    } else {
+      setCurrentView('customer');
+    }
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('aerostride_session'); // Hapus dari browser
+    setCurrentView('store');
+  };
+
+  // --- DATABASE STATE BROKER (HYBRID FALLBACK) ---
+  // Jika API gagal atau belum dibuat, sistem akan otomatis menggunakan data asli dari Excel Anda ini
   const [products, setProducts] = useState<Product[]>([
     { id: 'AST-01', name: 'Apex Weather-Shield Jacket', price: 750000, category: 'Jaket', size: 'L', stock: 120, threshold: 50, status: 'In Stock', image: 'https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?q=80&w=800&auto=format&fit=crop' },
     { id: 'AST-02', name: 'StreetStride Reflective Shoes', price: 680000, category: 'Sepatu', size: '42', stock: 85, threshold: 30, status: 'In Stock', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop' },
@@ -32,11 +57,31 @@ function App() {
     { id: 'TRX-ONL-001', customerName: 'Gladys Aditya', items: [{ productName: 'Apex Weather-Shield Jacket', qty: 1, price: 750000 }], totalAmount: 750000, status: 'Delivery', date: '22 Mei' }
   ]);
 
-  // Data sesuai: Book1.xlsx - penjualan offline.csv
   const [offlineSales, setOfflineSales] = useState<OfflineSale[]>([
     { id: 'TRX-OFF-001', itemCode: 'AST-01', productName: 'Apex Weather-Shield Jacket', qty: 2, totalPrice: 1500000, cabang: 'Jakarta', date: 'April' },
     { id: 'TRX-OFF-002', itemCode: 'AST-02', productName: 'StreetStride Reflective Shoes', qty: 1, totalPrice: 680000, cabang: 'Bandung', date: 'April' }
   ]);
+
+  // Menarik data dari Cloudflare D1 saat web dibuka
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        const resProd = await fetch('/api/products');
+        if (resProd.ok) {
+          const dataProd = await resProd.json();
+          setProducts(dataProd);
+        }
+        
+        // Panggil API orders dan offlineSales nanti jika file fungsinya sudah Anda buat
+        // const resOrd = await fetch('/api/orders'); 
+        // if (resOrd.ok) setOrders(await resOrd.json());
+      } catch (error) {
+        console.error("Gagal menarik data dari server:", error);
+      }
+    };
+    
+    fetchDashboardData();
+  }, []);
 
   const handleViewChange = (view: 'store' | 'admin' | 'customer') => {
     if (view === 'admin' && (!user || user.role !== 'admin')) {
@@ -47,49 +92,55 @@ function App() {
     setCurrentView(view);
   };
 
-  // --- ALUR SIMULASI PEMBELIAN CUSTOMER ONLINE (AUTOMATIC UPDATE) ---
-  const handleOnlineCheckout = () => {
-    if (!user) {
+  // --- ALUR CHECKOUT ASYNC (API CLOUDFLARE D1) ---
+  const handleOnlineCheckout = async () => {
+    if (!user) { 
       setIsCartOpen(false);
       setIsAuthModalOpen(true);
       alert('Autentikasi Diperlukan: Silakan login atau buat akun terlebih dahulu untuk melanjutkan proses pembayaran.');
-      return;
+      return; 
     }
 
-    // Simulasi barang di dalam keranjang belanja
     const targetSku = 'AST-01'; 
     const targetProduct = products.find(p => p.id === targetSku);
-
-    if (!targetProduct || targetProduct.stock < 1) {
-      alert('Checkout Gagal: Stok produk pilihan saat ini habis!');
+    if (!targetProduct) {
+      alert('Checkout Gagal: Data produk belum termuat dari server atau stok habis!');
       return;
     }
 
-    // 1. Kurangi stok di master data produk secara otomatis
-    const updatedProducts = products.map(p => {
-      if (p.id === targetSku) {
-        const stock = p.stock - 1;
-        const status: Product['status'] = stock <= 5 ? 'Critical' : stock <= p.threshold ? 'Low Stock' : 'In Stock';
-        return { ...p, stock, status };
+    const orderId = `TRX-ONL-${Date.now()}`;
+
+    try {
+      // Tembak data ke Endpoint Checkout Cloudflare
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sku: targetSku,
+          qty: 1,
+          orderId: orderId,
+          customerName: user.name,
+          totalAmount: targetProduct.price,
+          date: '23 Mei' // Bisa diganti new Date().toLocaleDateString('id-ID') nanti
+        })
+      });
+
+      if (!response.ok) throw new Error("Gagal Checkout di sisi Server");
+
+      alert('Pembayaran Berhasil! Sistem pusat telah mencatat transaksi Anda.');
+      
+      // Refresh data produk agar stok di UI ter-update dari database
+      const resProd = await fetch('/api/products');
+      if (resProd.ok) {
+        setProducts(await resProd.json());
       }
-      return p;
-    });
-    setProducts(updatedProducts);
+      
+      setIsCartOpen(false);
+      setCurrentView('customer');
 
-    // 2. Buat Nota Invoice Order baru ke Database Admin
-    const newOrder: Order = {
-      id: `TRX-ONL-00${orders.length + 1}`,
-      customerName: user.name,
-      items: [{ productName: targetProduct.name, qty: 1, price: targetProduct.price }],
-      totalAmount: targetProduct.price,
-      status: 'Packing',
-      date: '23 Mei'
-    };
-    setOrders([...orders, newOrder]);
-
-    setIsCartOpen(false);
-    alert('Pembayaran Berhasil! Silakan cek status kurir di panel akun Anda.');
-    setCurrentView('customer'); // Langsung arahkan pembeli ke dashboard miliknya
+    } catch (error) {
+      alert('Terjadi kesalahan pada server: ' + error);
+    }
   };
 
   return (
@@ -103,7 +154,7 @@ function App() {
           currentView={currentView === 'store' ? 'store' : 'admin'}
           onViewChange={(v) => handleViewChange(v === 'admin' ? 'admin' : 'store')}
           user={user}
-          onLogout={() => { setUser(null); setCurrentView('store'); }}
+          onLogout={handleLogout} // <--- GANTI JADI INI
         />
       )}
 
@@ -129,7 +180,7 @@ function App() {
             activeMenu={activeAdminMenu}
             setActiveMenu={setActiveAdminMenu}
             userName={user?.name || 'Admin'}
-            onLogout={() => { setUser(null); setCurrentView('store'); }}
+            onLogout={handleLogout} // <--- GANTI JADI INI
             onBackToStore={() => setCurrentView('store')}
           />
           <main className="flex-1">
@@ -138,9 +189,9 @@ function App() {
               products={products}
               orders={orders}
               offlineSales={offlineSales}
-              onUpdateProducts={setProducts}
-              onUpdateOrders={setOrders}
-              onUpdateOfflineSales={setOfflineSales}
+              onUpdateProducts={setProducts} // Ini nanti diganti dengan fetch PUT/POST ke API
+              onUpdateOrders={setOrders}     // Ini juga
+              onUpdateOfflineSales={setOfflineSales} // Ini juga
             />
           </main>
         </div>
@@ -148,7 +199,14 @@ function App() {
 
       {/* GLOBAL OVERLAYS */}
       <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onCheckout={handleOnlineCheckout} />
-      {isAuthModalOpen && <Auth onLoginSuccess={(u) => { setUser(u); setIsAuthModalOpen(false); if(u.role === 'admin') setCurrentView('admin'); else setCurrentView('customer'); }} onClose={() => setIsAuthModalOpen(false)} />}
+      
+      {/* GANTI KOMPONEN AUTH MENJADI SEPERTI INI */}
+      {isAuthModalOpen && (
+        <Auth 
+          onLoginSuccess={handleLogin} 
+          onClose={() => setIsAuthModalOpen(false)} 
+        />
+      )}
     </div>
   );
 }
