@@ -2,7 +2,22 @@ import { useState, useEffect } from 'react';
 import type { Product, Order, OfflineSale, CustomerData, DailySale } from '../types';
 
 export function useAppData() {
-  const [user, setUser] = useState<{ name: string; role: 'admin' | 'customer' } | null>(null);
+  const [user, setUser] = useState<{ name: string; role: 'admin' | 'customer' } | null>(() => {
+    // Ganti localStorage menjadi sessionStorage
+    const savedUser = sessionStorage.getItem('aero_user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  const updateAndSaveUser = (newUser: { name: string; role: 'admin' | 'customer' } | null) => {
+    setUser(newUser);
+    if (newUser) {
+      // Ganti localStorage menjadi sessionStorage
+      sessionStorage.setItem('aero_user', JSON.stringify(newUser));
+    } else {
+      // Ganti localStorage menjadi sessionStorage
+      sessionStorage.removeItem('aero_user');
+    }
+  };
 
   // 100% KOSONG - Siap menerima injeksi dari Cloudflare D1
   const [products, setProducts] = useState<Product[]>([]);
@@ -63,7 +78,7 @@ export function useAppData() {
   };
 
   return {
-    user, setUser, products, setProducts, orders, setOrders,
+    user, setUser:updateAndSaveUser, products, setProducts, orders, setOrders,
     offlineSales, setOfflineSales, customers, setCustomers,
     dailySales, setDailySales, handleOnlineCheckout
   };
