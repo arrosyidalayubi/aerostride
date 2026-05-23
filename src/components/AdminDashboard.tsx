@@ -3,6 +3,7 @@ import OfflineSalesView from './admin/OfflineSalesView';
 import InventoryView from './admin/InventoryView';
 import OrdersView from './admin/OrdersView';
 import CustomersView from './admin/CustomersView';
+import DailySalesView from './admin/DailySalesView';
 import type { Product, Order, OfflineSale, CustomerData, DailySale } from '../types';
 
 interface AdminDashboardProps {
@@ -31,10 +32,8 @@ export default function AdminDashboard({
           <OverviewView orders={orders} dailySales={dailySales} />
         )}
 
-        {/* Karena form Laporan Harian manual sudah digantikan oleh integrasi SQL Dump,
-            menu 'harian' kita arahkan ke ringkasan atau bisa Anda hapus dari Sidebar */}
         {activeMenu === 'harian' && (
-          <OverviewView orders={orders} dailySales={dailySales} />
+          <DailySalesView dailySales={dailySales} />
         )}
 
         {activeMenu === 'offline' && (

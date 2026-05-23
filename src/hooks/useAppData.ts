@@ -3,6 +3,8 @@ import type { Product, Order, OfflineSale, CustomerData, DailySale } from '../ty
 
 export function useAppData() {
   const [user, setUser] = useState<{ name: string; role: 'admin' | 'customer' } | null>(null);
+
+  // 100% Kosong. Menunggu suntikan murni dari API Cloudflare D1
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [offlineSales, setOfflineSales] = useState<OfflineSale[]>([]);
