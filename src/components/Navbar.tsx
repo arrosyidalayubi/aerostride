@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { Search, ShoppingBag, User, Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
 
-// 1. Tambahkan/Ganti Interface ini
+
 interface NavbarProps {
   onOpenCart: () => void;
   onOpenAuth: () => void;
-  currentView: 'store' | 'admin';
-  onViewChange: (view: 'store' | 'admin') => void;
+  currentView: 'store' | 'admin' | 'customer';
+  onViewChange: (view: 'store' | 'admin' | 'customer') => void;
   user: { name: string; role: 'admin' | 'customer' } | null;
   onLogout: () => void;
 }
 
-// 2. Terapkan interface tersebut ke fungsi komponen
+
 export default function Navbar({ 
   onOpenCart, 
   onOpenAuth, 
@@ -105,6 +105,7 @@ export default function Navbar({
                   </div>
                   
                   <div className="p-1">
+                    {/* JIKA ADMIN: Munculkan menu Dashboard SIM */}
                     {user.role === 'admin' && (
                       <button
                         onClick={() => {
@@ -114,6 +115,19 @@ export default function Navbar({
                         className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold rounded-xl transition-colors cursor-pointer ${currentView === 'admin' ? 'bg-red-50 text-red-600' : 'text-gray-700 hover:bg-gray-50'}`}
                       >
                         <LayoutDashboard className="w-4 h-4" /> Dashboard SIM
+                      </button>
+                    )}
+
+                    {/* JIKA CUSTOMER: Munculkan menu Panel Pelanggan */}
+                    {user.role === 'customer' && (
+                      <button
+                        onClick={() => {
+                          onViewChange('customer');
+                          setIsProfileDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold rounded-xl transition-colors cursor-pointer ${currentView === 'customer' ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'}`}
+                      >
+                        <User className="w-4 h-4" /> Pesanan Saya
                       </button>
                     )}
                     

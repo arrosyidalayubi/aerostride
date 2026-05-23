@@ -1,21 +1,23 @@
 import { useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { Trash2, Plus, RefreshCw } from 'lucide-react';
-import type { Product, Order, OfflineSale } from '../types';
+import type { Product, Order, OfflineSale, CustomerData } from '../types';
 
 interface AdminDashboardProps {
   activeMenu: string;
   products: Product[];
   orders: Order[];
   offlineSales: OfflineSale[];
+  customers: CustomerData[];
   onUpdateProducts: (products: Product[]) => void;
   onUpdateOrders: (orders: Order[]) => void;
   onUpdateOfflineSales: (sales: OfflineSale[]) => void;
+  onUpdateCustomers: (customers: CustomerData[]) => void;
 }
 
 export default function AdminDashboard({
-  activeMenu, products, orders, offlineSales,
-  onUpdateProducts, onUpdateOrders, onUpdateOfflineSales
+  activeMenu, products, orders, offlineSales, customers,
+  onUpdateProducts, onUpdateOrders, onUpdateOfflineSales, onUpdateCustomers
 }: AdminDashboardProps) {
 
   // Local State untuk Form Input CRUD
@@ -325,6 +327,55 @@ export default function AdminDashboard({
                       <td className="py-4 text-right">
                         <button onClick={() => handleToggleOrderStatus(o.id)} className="inline-flex items-center gap-1 bg-gray-900 text-white text-xs font-bold px-3 py-2 rounded-xl hover:bg-gray-800 cursor-pointer">
                           <RefreshCw className="w-3 h-3" /> Ubah Status
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+
+        {/* VIEW 5: DATA PELANGGAN (CRM) */}
+        {activeMenu === 'customers' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h1 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">Manajemen Pelanggan</h1>
+              <button className="bg-black text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors cursor-pointer">
+                + Tambah Pelanggan Manual
+              </button>
+            </div>
+
+            <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-gray-100 text-gray-400 text-xs font-bold uppercase">
+                    <th className="pb-3">ID Akun</th>
+                    <th className="pb-3">Nama Lengkap</th>
+                    <th className="pb-3">Kontak (Email / HP)</th>
+                    <th className="pb-3">Tanggal Bergabung</th>
+                    <th className="pb-3 text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm divide-y divide-gray-50">
+                  {customers.map(c => (
+                    <tr key={c.id}>
+                      <td className="py-4 font-mono font-bold text-gray-400">{c.id}</td>
+                      <td className="py-4 font-bold text-gray-900">{c.name}</td>
+                      <td className="py-4">
+                        <div className="text-gray-900 font-medium">{c.email}</div>
+                        <div className="text-gray-500 text-xs">{c.phone || '-'}</div>
+                      </td>
+                      <td className="py-4 text-gray-600">{c.joinDate}</td>
+                      <td className="py-4 text-right">
+                        <button 
+                          onClick={() => onUpdateCustomers(customers.filter(cust => cust.id !== c.id))}
+                          className="p-2 text-gray-400 hover:text-red-600 rounded-xl transition-colors cursor-pointer"
+                          title="Hapus Data"
+                        >
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </td>
                     </tr>

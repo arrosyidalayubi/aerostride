@@ -28,3 +28,11 @@ export interface OfflineSale {
   cabang: 'Jakarta' | 'Bandung'; 
   date: string;
 }
+
+export interface CustomerData {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  joinDate: string;
+}

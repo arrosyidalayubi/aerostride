@@ -9,13 +9,14 @@ import AdminSidebar from './components/AdminSidebar';
 import CustomerDashboard from './components/CustomerDashboard';
 import CartDrawer from './components/CartDrawer';
 import Auth from './components/Auth';
-import type { Product, Order, OfflineSale } from './types';
+import type { Product, Order, OfflineSale, CustomerData } from './types';
 
 function App() {
   const [currentView, setCurrentView] = useState<'store' | 'admin' | 'customer'>('store');
   const [activeAdminMenu, setActiveAdminMenu] = useState('ringkasan');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [customers, setCustomers] = useState<CustomerData[]>([]);
   
   // State User Session Manager
   const [user, setUser] = useState<{ name: string; role: 'admin' | 'customer' } | null>(() => {
@@ -67,19 +68,16 @@ function App() {
     const fetchDashboardData = async () => {
       try {
         const resProd = await fetch('/api/products');
-        if (resProd.ok) {
-          const dataProd = await resProd.json();
-          setProducts(dataProd);
-        }
+        if (resProd.ok) setProducts(await resProd.json());
         
-        // Panggil API orders dan offlineSales nanti jika file fungsinya sudah Anda buat
-        // const resOrd = await fetch('/api/orders'); 
-        // if (resOrd.ok) setOrders(await resOrd.json());
+        // Panggil API Customers
+        const resCust = await fetch('/api/customers');
+        if (resCust.ok) setCustomers(await resCust.json());
+        
       } catch (error) {
         console.error("Gagal menarik data dari server:", error);
       }
     };
-    
     fetchDashboardData();
   }, []);
 
@@ -180,7 +178,7 @@ function App() {
             activeMenu={activeAdminMenu}
             setActiveMenu={setActiveAdminMenu}
             userName={user?.name || 'Admin'}
-            onLogout={handleLogout} // <--- GANTI JADI INI
+            onLogout={handleLogout}
             onBackToStore={() => setCurrentView('store')}
           />
           <main className="flex-1">
@@ -189,9 +187,11 @@ function App() {
               products={products}
               orders={orders}
               offlineSales={offlineSales}
-              onUpdateProducts={setProducts} // Ini nanti diganti dengan fetch PUT/POST ke API
-              onUpdateOrders={setOrders}     // Ini juga
-              onUpdateOfflineSales={setOfflineSales} // Ini juga
+              customers={customers}
+              onUpdateProducts={setProducts}
+              onUpdateOrders={setOrders}
+              onUpdateOfflineSales={setOfflineSales}
+              onUpdateCustomers={setCustomers}
             />
           </main>
         </div>
