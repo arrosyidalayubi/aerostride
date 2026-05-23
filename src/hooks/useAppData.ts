@@ -3,10 +3,14 @@ import type { Product, Order, OfflineSale, CustomerData, DailySale } from '../ty
 
 export function useAppData() {
   const [user, setUser] = useState<{ name: string; role: 'admin' | 'customer' } | null>(() => {
-    // Ganti localStorage menjadi sessionStorage
-    const savedUser = sessionStorage.getItem('aero_user');
+  // Mencoba membaca data tepat saat pertama kali inisialisasi
+  const savedUser = sessionStorage.getItem('aero_user');
+  try {
     return savedUser ? JSON.parse(savedUser) : null;
-  });
+  } catch {
+    return null;
+  }
+});
 
   const updateAndSaveUser = (newUser: { name: string; role: 'admin' | 'customer' } | null) => {
     setUser(newUser);

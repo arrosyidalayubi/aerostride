@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import FeaturedProducts from './components/FeaturedProducts';
@@ -13,18 +13,36 @@ import { useAppData } from './hooks/useAppData'; // Import Otak Data
 import { Menu } from 'lucide-react';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState<'store' | 'admin' | 'customer'>('store');
+  
+  
+  // 1. Inisialisasi state dengan membaca sessionStorage (jika ada, pakai itu; jika tidak, default ke 'store')
+  const [currentView, setCurrentView] = useState<'store' | 'admin' | 'customer'>(() => {
+    return (sessionStorage.getItem('aero_view') as any) || 'store';
+  });
+
   const [activeAdminMenu, setActiveAdminMenu] = useState('ringkasan');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isAdminMobileOpen, setIsAdminMobileOpen] = useState(false);
   
-  // Memanggil semua data & fungsi dari Custom Hook dalam 1 baris
   const { 
     user, setUser, products, setProducts, orders, setOrders, 
     offlineSales, setOfflineSales, customers, setCustomers, 
     dailySales, handleOnlineCheckout 
   } = useAppData();
+
+  // 2. Simpan setiap perubahan 'currentView' ke sessionStorage
+  useEffect(() => {
+    sessionStorage.setItem('aero_view', currentView);
+  }, [currentView]);
+
+  // Modifikasi Logout agar menghapus juga view-nya
+  const handleLogout = () => {
+    setUser(null);
+    setCurrentView('store');
+    sessionStorage.removeItem('aero_user');
+    sessionStorage.removeItem('aero_view'); // Hapus view saat logout
+  }; useAppData();
 
   const handleViewChange = (view: 'store' | 'admin' | 'customer') => {
     if (view === 'admin' && (!user || user.role !== 'admin')) {
@@ -60,7 +78,7 @@ export default function App() {
           currentView={currentView === 'store' ? 'store' : 'admin'}
           onViewChange={(v) => handleViewChange(v === 'admin' ? 'admin' : 'store')}
           user={user}
-          onLogout={() => { setUser(null); setCurrentView('store'); }}
+          onLogout={handleLogout}
         />
       )}
 
@@ -87,7 +105,7 @@ export default function App() {
           <AdminSidebar 
             activeMenu={activeAdminMenu} setActiveMenu={setActiveAdminMenu} userName={user?.name || 'Admin'}
             isOpen={isAdminMobileOpen} onClose={() => setIsAdminMobileOpen(false)}
-            onLogout={() => { setUser(null); setCurrentView('store'); }} onBackToStore={() => setCurrentView('store')}
+            onLogout={handleLogout} onBackToStore={() => setCurrentView('store')}
           />
           <main className="flex-1">
             <AdminDashboard 
