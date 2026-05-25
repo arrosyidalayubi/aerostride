@@ -86,7 +86,7 @@ export default function App() {
           <button onClick={() => setIsAdminMobileOpen(true)} className="p-2">
             <Menu className="w-6 h-6" />
           </button>
-          <img src="/logo-aerostride-hitam.png" alt="Panel Admin" className="h-6 object-contain" />
+          <img src="/logo-aerostride-putih.png" alt="Panel Admin" className="h-6 object-contain" />
           <div className="w-10"></div>
         </div>
       )}
