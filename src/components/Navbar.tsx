@@ -70,14 +70,14 @@ export default function Navbar({
             >
               Belanja
             </button>
-            <a href="#" className="text-sm font-semibold text-gray-900 hover:text-gray-500 transition-colors uppercase tracking-wide pt-0.5">
-              Pria
+            <a href="#produk" className="text-sm font-semibold text-gray-900 hover:text-gray-500 transition-colors uppercase tracking-wide pt-0.5">
+              Produk
             </a>
-            <a href="#" className="text-sm font-semibold text-gray-900 hover:text-gray-500 transition-colors uppercase tracking-wide pt-0.5">
-              Wanita
+            <a href="#ulasan" className="text-sm font-semibold text-gray-900 hover:text-gray-500 transition-colors uppercase tracking-wide pt-0.5">
+              Ulasan
             </a>
-            <a href="#" className="text-sm font-semibold text-red-600 hover:text-red-500 transition-colors uppercase tracking-wide pt-0.5">
-              Sale
+            <a href="#promo" className="text-sm font-semibold text-red-600 hover:text-red-500 transition-colors uppercase tracking-wide pt-0.5">
+              Promo
             </a>
           </div>
 

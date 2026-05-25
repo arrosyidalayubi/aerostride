@@ -4,3 +4,7 @@
   --color-brand-primary: #171717; /* Hitam elegan ala Nike */
   --color-brand-accent: #f97316; /* Oranye untuk tombol Call-to-Action */
 }
+
+html {
+  scroll-behavior: smooth;
+}
