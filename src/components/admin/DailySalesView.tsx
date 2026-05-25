@@ -67,11 +67,11 @@ export default function DailySalesView({ dailySales, onUpdateDailySales }: Daily
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">Laporan Harian</h1>
         </div>
-        <div className="flex gap-4">
-          <button onClick={() => { setEditId(''); setFormData({ date: '', trxOnline: 0, omzetOnline: 0, trxJakarta: 0, omzetJakarta: 0, trxBandung: 0, omzetBandung: 0 }); setIsModalOpen(true); }} className="bg-black text-white px-4 py-2 rounded-xl font-bold text-sm flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto mt-4 md:mt-0">
+          <button onClick={() => { setEditId(''); setFormData({ date: '', trxOnline: 0, omzetOnline: 0, trxJakarta: 0, omzetJakarta: 0, trxBandung: 0, omzetBandung: 0 }); setIsModalOpen(true); }} className="w-full sm:w-auto bg-black text-white px-4 py-3 sm:py-2 rounded-xl font-bold text-sm flex items-center justify-center gap-2">
             <Plus className="w-4 h-4"/> Koreksi / Tambah
           </button>
-          <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-gray-200">
+          <div className="flex items-center justify-between sm:justify-start gap-3 bg-white p-2 rounded-2xl border border-gray-200 w-full sm:w-auto">
             <Filter className="w-5 h-5 ml-2 text-gray-400" />
             <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="bg-transparent text-sm font-bold outline-none cursor-pointer"><option value="Januari">Januari</option><option value="Februari">Februari</option><option value="Maret">Maret</option><option value="April">April</option><option value="Mei">Mei</option></select>
             <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="bg-transparent text-sm font-bold outline-none cursor-pointer"><option value="2026">2026</option></select>
@@ -89,7 +89,7 @@ export default function DailySalesView({ dailySales, onUpdateDailySales }: Daily
         </div>
 
         <div className="p-6 overflow-x-auto">
-          <table className="w-full text-left min-w-275">
+          <table className="w-full text-left min-w-250">
             <thead>
               <tr className="border-b border-gray-100 text-gray-400 text-xs font-bold uppercase">
                 <th className="pb-3">Tanggal</th>
@@ -131,7 +131,7 @@ export default function DailySalesView({ dailySales, onUpdateDailySales }: Daily
           <div className="bg-white rounded-3xl p-6 w-full max-w-2xl relative">
             <button onClick={() => setIsModalOpen(false)} className="absolute top-4 right-4 text-gray-400"><X /></button>
             <h2 className="text-xl font-black mb-6 uppercase">{editId ? 'Koreksi Data Harian' : 'Tambah Rekap Manual'}</h2>
-            <form onSubmit={handleSave} className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSave} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="col-span-2"><label className="block text-xs font-bold mb-1">Tanggal (DD-MM-YYYY)</label><input type="text" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full bg-gray-50 border border-gray-200 rounded p-2" required /></div>
               <div><label className="block text-xs font-bold mb-1">Trx Online</label><input type="number" value={formData.trxOnline} onChange={e => setFormData({...formData, trxOnline: Number(e.target.value)})} className="w-full bg-gray-50 border p-2 rounded"/></div>
               <div><label className="block text-xs font-bold mb-1">Omzet Online</label><input type="number" value={formData.omzetOnline} onChange={e => setFormData({...formData, omzetOnline: Number(e.target.value)})} className="w-full bg-gray-50 border p-2 rounded"/></div>

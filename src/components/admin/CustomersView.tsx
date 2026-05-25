@@ -80,7 +80,7 @@ export default function CustomersView({ customers, onUpdateCustomers }: Customer
 
       {/* TABEL DATA */}
       <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm overflow-x-auto">
-        <table className="w-full text-left min-w-150">
+        <table className="w-full text-left min-w-[800px]">
           <thead>
             <tr className="border-b border-gray-100 text-gray-400 text-xs font-bold uppercase">
               <th className="pb-3">ID Akun</th>

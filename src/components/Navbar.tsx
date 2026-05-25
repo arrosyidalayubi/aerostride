@@ -5,8 +5,8 @@ import { Search, ShoppingBag, User, Menu, X, LayoutDashboard, LogOut } from 'luc
 interface NavbarProps {
   onOpenCart: () => void;
   onOpenAuth: () => void;
-  currentView: 'store' | 'admin' | 'customer';
-  onViewChange: (view: 'store' | 'admin' | 'customer') => void;
+  currentView: 'store' | 'catalog' | 'admin' | 'customer'; 
+  onViewChange: (v: 'store' | 'catalog' | 'admin' | 'customer') => void;
   user: { name: string; role: 'admin' | 'customer' } | null;
   onLogout: () => void;
   cartItemCount: number;
@@ -162,20 +162,57 @@ export default function Navbar({
 
       {/* Mobile Menu Dropdown Panel */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100 shadow-xl absolute w-full left-0 top-16 z-50">
-          <div className="px-4 pt-2 pb-6 space-y-1">
-            <button 
-              onClick={() => { onViewChange('store'); toggleMobileMenu(); }}
-              className="w-full text-left block px-3 py-4 text-base font-bold text-gray-900 border-b border-gray-50 hover:bg-gray-50"
-            >
-              Belanja Utama
-            </button>
-            {user && user.role === 'admin' && (
-              <button 
-                onClick={() => { onViewChange('admin'); toggleMobileMenu(); }}
-                className="w-full text-left block px-3 py-4 text-base font-bold text-red-600 border-b border-gray-50 hover:bg-gray-50"
+        <div className="md:hidden border-t border-gray-100 bg-white px-4 py-4 space-y-2 absolute w-full left-0 shadow-xl animate-in slide-in-from-top-2">
+          
+          <button 
+            onClick={() => { onViewChange('store'); setIsMobileMenuOpen(false); }} 
+            className="w-full text-left px-4 py-3 rounded-xl text-sm font-black text-gray-900 hover:bg-gray-50 transition-colors"
+          >
+            Beranda
+          </button>
+          
+          <button 
+            onClick={() => { onViewChange('catalog'); setIsMobileMenuOpen(false); }} 
+            className="w-full text-left px-4 py-3 rounded-xl text-sm font-black text-gray-900 hover:bg-gray-50 transition-colors"
+          >
+            Katalog Lengkap
+          </button>
+
+          {/* Hanya tampilkan link navigasi ID jika sedang di halaman Beranda/Store */}
+          {currentView === 'store' && (
+            <>
+              <a 
+                href="#produk" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="block px-4 py-3 rounded-xl text-sm font-black text-gray-600 hover:text-black hover:bg-gray-50 transition-colors"
               >
-                Dashboard Admin SIM
+                Gear Pilihan
+              </a>
+              <a 
+                href="#ulasan" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="block px-4 py-3 rounded-xl text-sm font-black text-gray-600 hover:text-black hover:bg-gray-50 transition-colors"
+              >
+                Ulasan Pelanggan
+              </a>
+            </>
+          )}
+
+          {/* Batas untuk Menu Akun */}
+          <div className="border-t border-gray-100 pt-2 mt-2">
+            {!user ? (
+              <button 
+                onClick={() => { onOpenAuth(); setIsMobileMenuOpen(false); }} 
+                className="w-full bg-black text-white px-4 py-3 rounded-xl text-sm font-black hover:bg-gray-800 transition-colors text-center"
+              >
+                Masuk / Daftar
+              </button>
+            ) : (
+              <button 
+                onClick={() => { onViewChange(user.role === 'admin' ? 'admin' : 'customer'); setIsMobileMenuOpen(false); }} 
+                className="w-full text-left px-4 py-3 rounded-xl text-sm font-black text-blue-600 hover:bg-blue-50 transition-colors"
+              >
+                Dasbor Akun Saya
               </button>
             )}
           </div>

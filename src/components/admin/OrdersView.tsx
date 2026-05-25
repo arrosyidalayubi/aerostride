@@ -21,7 +21,7 @@ export default function OrdersView({ orders, onUpdateOrders }: OrdersViewProps) 
       <h1 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">Pengiriman Pesanan Online</h1>
       
       <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm overflow-x-auto">
-        <table className="w-full text-left min-w-150">
+        <table className="w-full text-left min-w-200">
           <thead>
             <tr className="border-b border-gray-100 text-gray-400 text-xs font-bold uppercase">
               <th className="pb-3">Tanggal</th>

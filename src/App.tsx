@@ -45,7 +45,7 @@ export default function App() {
     sessionStorage.removeItem('aero_view');
   };
 
-  const handleViewChange = (view: 'store' | 'admin' | 'customer') => {
+  const handleViewChange = (view: 'store' | 'catalog' | 'admin' | 'customer') => {
     if (view === 'admin' && (!user || user.role !== 'admin')) {
       setIsAuthModalOpen(true);
       toast.error('Akses Terbatas: Sila login dengan Akun Admin.');
@@ -77,8 +77,8 @@ export default function App() {
           cartItemCount={cart.reduce((sum, item) => sum + item.qty, 0)}  
           onOpenCart={() => setIsCartOpen(true)}
           onOpenAuth={() => setIsAuthModalOpen(true)}
-          currentView={currentView === 'store' ? 'store' : 'admin'}
-          onViewChange={(v) => handleViewChange(v === 'admin' ? 'admin' : 'store')}
+          currentView={currentView} 
+          onViewChange={handleViewChange} 
           user={user}
           onLogout={handleLogout}
         />

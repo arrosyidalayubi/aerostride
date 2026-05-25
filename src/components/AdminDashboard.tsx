@@ -27,7 +27,7 @@ export default function AdminDashboard({
   
   return (
     <div className="min-h-screen bg-gray-50 lg:ml-64 p-4 md:p-8 pt-24 lg:pt-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full max-w-7xl mx-auto pt-20 lg:pt-8 px-4 sm:px-6 lg:px-8 pb-12">
         
         {activeMenu === 'ringkasan' && (
           <OverviewView dailySales={dailySales} />

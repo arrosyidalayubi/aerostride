@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Store, Trash2 } from 'lucide-react';
 import type { Product, OfflineSale } from '../../types';
+import toast from 'react-hot-toast';
 
 interface OfflineSalesViewProps {
   products: Product[];
@@ -39,9 +40,9 @@ const handleVoidTransaction = async (id: string, itemCode: string, qty: number) 
         p.id === itemCode ? { ...p, stock: p.stock + qty } : p
       ));
       
-      alert('Nota berhasil dibatalkan. Stok dan Laporan Harian telah dikoreksi otomatis.');
-    } catch (error) {
-      alert(error);
+      toast.success('Nota berhasil dibatalkan. Stok dan Laporan Harian telah dikoreksi otomatis.');
+    } catch {
+      toast.error('Gagal membatalkan nota.');
     }
   };
 
@@ -51,7 +52,7 @@ const handleVoidTransaction = async (id: string, itemCode: string, qty: number) 
     const targetProduct = products.find(p => p.id === offlineItemCode);
     
     if (!targetProduct || targetProduct.stock < offlineQty) {
-      alert('Transaksi Gagal: Stok di layar tidak mencukupi!');
+      toast.error('Transaksi Gagal: Stok di layar tidak mencukupi!');
       return;
     }
     
@@ -92,10 +93,10 @@ const handleVoidTransaction = async (id: string, itemCode: string, qty: number) 
       
       // 3. Reset form jumlah barang
       setOfflineQty(1);
-      alert('✅ Transaksi Offline Berhasil! Stok barang telah disinkronkan ke Database Pusat.');
+      toast.success('✅ Transaksi Offline Berhasil! Stok barang telah disinkronkan ke Database Pusat.');
 
     } catch (error) {
-      alert(`❌ Kesalahan Sinkronisasi: ${error}`);
+      toast.error(`❌ Kesalahan Sinkronisasi: ${error}`);
     }
   };
 
@@ -127,7 +128,7 @@ const handleVoidTransaction = async (id: string, itemCode: string, qty: number) 
       </form>
 
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="w-full text-left min-w-200">
             <thead>
               <tr className="border-b border-gray-100 text-gray-400 text-xs font-bold uppercase">
                 <th className="pb-3">ID Nota</th>
