@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Store, Trash2 } from 'lucide-react';
 import type { Product, OfflineSale } from '../../types';
 
 interface OfflineSalesViewProps {
@@ -24,6 +24,27 @@ export default function OfflineSalesView({ products, offlineSales, onUpdateProdu
     }));
   };
 
+const handleVoidTransaction = async (id: string, itemCode: string, qty: number) => {
+    if (!window.confirm(`Yakin ingin membatalkan nota ${id}? Stok akan dikembalikan ke gudang dan laporan harian akan disesuaikan.`)) return;
+
+    try {
+      const res = await fetch(`/api/offline-sales?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Gagal membatalkan transaksi');
+      
+      // Update UI: Hapus nota dari tabel
+      onUpdateOfflineSales(offlineSales.filter(sale => sale.id !== id));
+      
+      // Update UI: Kembalikan stok di layar secara langsung (tanpa harus refresh)
+      onUpdateProducts(products.map(p => 
+        p.id === itemCode ? { ...p, stock: p.stock + qty } : p
+      ));
+      
+      alert('Nota berhasil dibatalkan. Stok dan Laporan Harian telah dikoreksi otomatis.');
+    } catch (error) {
+      alert(error);
+    }
+  };
+
   // --- UBAH FUNGSI INI MENJADI ASYNC ---
   const handleAddOfflineSale = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,8 +57,11 @@ export default function OfflineSalesView({ products, offlineSales, onUpdateProdu
     
     const priceTotal = targetProduct.price * offlineQty;
     
-    // Format tanggal misalnya: "Mei 2026"
-    const dateNow = new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    const today = new Date();
+    const d = String(today.getDate()).padStart(2, '0');
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const y = today.getFullYear();
+    const dateNow = `${d}-${m}-${y}`;
     
     const newSale: OfflineSale = {
       id: `TRX-OFF-${Date.now()}`, 
@@ -98,33 +122,45 @@ export default function OfflineSalesView({ products, offlineSales, onUpdateProdu
           </select>
         </div>
         <button type="submit" className="bg-black text-white p-3.5 rounded-xl font-bold text-sm cursor-pointer hover:bg-gray-800 transition-colors flex items-center justify-center gap-2">
-          <Plus className="w-4 h-4"/> Catat Penjualan
+          <Store className="w-4 h-4"/> Catat Penjualan
         </button>
       </form>
 
       <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 overflow-x-auto">
-        <table className="w-full text-left min-w-150">
-          <thead>
-            <tr className="border-b border-gray-100 text-gray-400 text-xs font-bold uppercase">
-              <th className="pb-3">ID Nota</th>
-              <th className="pb-3">Produk</th>
-              <th className="pb-3">Qty</th>
-              <th className="pb-3">Total</th>
-              <th className="pb-3">Cabang</th>
-            </tr>
-          </thead>
-          <tbody className="text-sm divide-y divide-gray-50">
-            {offlineSales.map(s => (
-              <tr key={s.id}>
-                <td className="py-3 font-mono text-gray-400 font-bold">{s.id}</td>
-                <td className="py-3 font-bold">{s.productName}</td>
-                <td className="py-3">{s.qty} pasang</td>
-                <td className="py-3 font-bold">Rp {s.totalPrice.toLocaleString('id-ID')}</td>
-                <td className="py-3"><span className="px-2.5 py-1 text-xs font-bold rounded-full bg-red-50 text-red-600">{s.cabang}</span></td>
+        <table className="w-full text-left">
+            <thead>
+              <tr className="border-b border-gray-100 text-gray-400 text-xs font-bold uppercase">
+                <th className="pb-3">ID Nota</th>
+                <th className="pb-3">Produk</th>
+                <th className="pb-3 text-center">Qty</th>
+                <th className="pb-3 text-right">Total</th>
+                <th className="pb-3 text-center">Cabang</th>
+                <th className="pb-3 text-right">Aksi</th> {/* Kolom Baru */}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="text-sm divide-y divide-gray-50">
+              {offlineSales.map(sale => (
+                <tr key={sale.id} className="hover:bg-gray-50/50">
+                  <td className="py-4 font-bold text-gray-400">{sale.id}</td>
+                  <td className="py-4 font-bold text-gray-900">{sale.productName}</td>
+                  <td className="py-4 text-center">{sale.qty} pasang</td>
+                  <td className="py-4 font-bold text-gray-900 text-right">Rp {sale.totalPrice.toLocaleString('id-ID')}</td>
+                  <td className="py-4 text-center"><span className="px-2 py-1 bg-red-50 text-red-600 rounded-lg font-bold text-xs">{sale.cabang}</span></td>
+                  
+                  {/* Tombol Hapus Baru */}
+                  <td className="py-4 text-right">
+                    <button 
+                      onClick={() => handleVoidTransaction(sale.id, sale.itemCode, sale.qty)}
+                      className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-100"
+                      title="Batalkan Transaksi"
+                    >
+                      <Trash2 className="w-4 h-4"/>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
       </div>
     </div>
   );

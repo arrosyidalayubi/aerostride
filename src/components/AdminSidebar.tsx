@@ -38,13 +38,19 @@ export default function AdminSidebar({
       }`}>
         
         {/* Header Sidebar */}
-        <div className="p-6 border-b border-gray-800 flex justify-between items-center">
+        <div className="p-6 border-b border-gray-800 flex justify-between items-start">
           <div>
-            <h2 className="text-2xl font-black tracking-tighter uppercase text-white">SIM Admin</h2>
-            <p className="text-xs text-gray-400 font-bold mt-1 bg-gray-800 inline-block px-2 py-1 rounded-md">{userName}</p>
+            <div className="flex items-center gap-3 mb-2">
+              {/* Menampilkan Logo di Sidebar */}
+              <img src="/logo-aerostride-putih.png" alt="Logo Admin" className="h-8 object-contain" />
+              <h2 className="text-xl font-black tracking-tighter uppercase text-white">ADMIN</h2>
+            </div>
+            {/* INI PERBAIKANNYA: Menggunakan userName alih-alih teks statis */}
+            <p className="text-xs font-bold text-gray-400 capitalize">{userName}</p>
           </div>
+          
           {/* Tombol Close Hanya Muncul di Mobile */}
-          <button onClick={onClose} className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors cursor-pointer">
+          <button onClick={onClose} className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors cursor-pointer -mr-2 -mt-2">
             <X className="w-5 h-5" />
           </button>
         </div>

@@ -17,7 +17,7 @@ export default function App() {
   
   // 1. Inisialisasi state dengan membaca sessionStorage (jika ada, pakai itu; jika tidak, default ke 'store')
   const [currentView, setCurrentView] = useState<'store' | 'admin' | 'customer'>(() => {
-    return (sessionStorage.getItem('aero_view') as any) || 'store';
+    return (sessionStorage.getItem('aero_view') as 'store' | 'admin' | 'customer') || 'store';
   });
 
   const [activeAdminMenu, setActiveAdminMenu] = useState('ringkasan');
@@ -28,7 +28,7 @@ export default function App() {
   const { 
     user, setUser, products, setProducts, orders, setOrders, 
     offlineSales, setOfflineSales, customers, setCustomers, 
-    dailySales, handleOnlineCheckout 
+    dailySales, handleOnlineCheckout ,setDailySales
   } = useAppData();
 
   // 2. Simpan setiap perubahan 'currentView' ke sessionStorage
@@ -36,12 +36,11 @@ export default function App() {
     sessionStorage.setItem('aero_view', currentView);
   }, [currentView]);
 
-  // Modifikasi Logout agar menghapus juga view-nya
   const handleLogout = () => {
     setUser(null);
     setCurrentView('store');
     sessionStorage.removeItem('aero_user');
-    sessionStorage.removeItem('aero_view'); // Hapus view saat logout
+    sessionStorage.removeItem('aero_view');
   }; useAppData();
 
   const handleViewChange = (view: 'store' | 'admin' | 'customer') => {
@@ -87,7 +86,7 @@ export default function App() {
           <button onClick={() => setIsAdminMobileOpen(true)} className="p-2">
             <Menu className="w-6 h-6" />
           </button>
-          <span className="font-black tracking-tighter uppercase text-sm">Panel Kendali SIM</span>
+          <img src="/logo-aerostride-hitam.png" alt="Panel Admin" className="h-6 object-contain" />
           <div className="w-10"></div>
         </div>
       )}
@@ -109,10 +108,17 @@ export default function App() {
           />
           <main className="flex-1">
             <AdminDashboard 
-              activeMenu={activeAdminMenu} products={products} orders={orders} 
-              offlineSales={offlineSales} customers={customers} dailySales={dailySales}
-              onUpdateProducts={setProducts} onUpdateOrders={setOrders} onUpdateOfflineSales={setOfflineSales} 
+              activeMenu={activeAdminMenu} 
+              products={products} 
+              orders={orders} 
+              offlineSales={offlineSales} 
+              customers={customers} 
+              dailySales={dailySales}
+              onUpdateProducts={setProducts} 
+              onUpdateOrders={setOrders} 
+              onUpdateOfflineSales={setOfflineSales} 
               onUpdateCustomers={setCustomers}
+              onUpdateDailySales={setDailySales} 
             />
           </main>
         </div>

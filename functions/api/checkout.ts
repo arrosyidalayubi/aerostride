@@ -1,48 +1,57 @@
-interface D1PreparedStatement {
-  bind(...params: unknown[]): D1PreparedStatement;
-  first(): Promise<unknown>;
+import type { D1Database } from '@cloudflare/workers-types';
+
+interface Env { DB: D1Database; }
+
+// Cetakan untuk isi keranjang
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  qty: number;
+  image: string;
 }
 
-interface D1Database {
-  prepare(sql: string): D1PreparedStatement;
-  batch(statements: D1PreparedStatement[]): Promise<unknown>;
+// Cetakan untuk payload saat checkout
+interface CheckoutPayload {
+  id: string;
+  customerName: string;
+  date: string;
+  totalAmount: number;
+  items: CartItem[];
 }
 
-interface PagesContext {
-  request: Request;
-  env: {
-    DB: D1Database | Record<string, unknown>; // Menampung binding database
-  };
-}
-
-export async function onRequestPost(context: PagesContext) {
+export const onRequestPost = async (context: { env: Env, request: Request }) => {
   try {
-    const data = await context.request.json();
+    // Gunakan Type Assertion agar ESLint dan TypeScript tidak marah
+    const data = (await context.request.json()) as CheckoutPayload; 
     const db = context.env.DB;
-    if (!db || typeof (db as D1Database).prepare !== "function") {
-      return new Response(JSON.stringify({ error: "Database tidak tersedia" }), { status: 500 });
+
+    // 1. Simpan ke tabel 'orders'
+    // CATATAN: Begitu ini sukses, Trigger D1 akan OTOMATIS mengisi 'daily_sales'
+    await db.prepare("INSERT INTO orders (id, customerName, date, totalAmount, status, items) VALUES (?, ?, ?, ?, ?, ?)")
+      .bind(
+        data.id, 
+        data.customerName || 'Pelanggan', 
+        data.date, 
+        data.totalAmount, 
+        'Pending', // Status default
+        JSON.stringify(data.items) // Ubah array keranjang jadi string agar bisa masuk database
+      ).run();
+
+    // 2. Kurangi Stok Fisik di tabel 'products'
+    // Kita gunakan looping untuk mengurangi stok setiap barang di keranjang
+    if (data.items && data.items.length > 0) {
+      const statements = data.items.map((item: CartItem) =>
+        db.prepare("UPDATE products SET stock = stock - ? WHERE name = ?").bind(item.qty, item.name)
+      );
+      // Eksekusi semua pengurangan stok sekaligus (Batch)
+      await db.batch(statements);
     }
-    const d1db = db as D1Database;
 
-    // 1. Cek ketersediaan stok
-    const product = await d1db.prepare("SELECT stock FROM products WHERE id = ?").bind(data.sku).first() as { stock: number } | null;
-    if (!product || product.stock < data.qty) {
-      return new Response(JSON.stringify({ error: "Stok tidak mencukupi" }), { status: 400 });
-    }
-
-    const newStock = product.stock - data.qty;
-    const newStatus = newStock <= 5 ? 'Critical' : 'In Stock';
-
-    // 2. Lakukan Update Stok dan Insert Order secara berurutan
-    const batch = await d1db.batch([
-      d1db.prepare("UPDATE products SET stock = ?, status = ? WHERE id = ?").bind(newStock, newStatus, data.sku),
-      d1db.prepare("INSERT INTO orders (id, customerName, totalAmount, status, date) VALUES (?, ?, ?, ?, ?)")
-        .bind(data.orderId, data.customerName, data.totalAmount, "Packing", data.date)
-    ]);
-
-    return new Response(JSON.stringify({ success: true, batch }), { status: 200 });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return new Response(JSON.stringify({ error: message }), { status: 500 });
+    return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
+  
+  } catch (err: unknown) {
+    // Jika meledak, kirimkan pesan error aslinya agar kita tahu salahnya di mana
+    return new Response(JSON.stringify({ error: `Gagal Checkout: ${ (err as Error).message }` }), { status: 500 });
   }
 }

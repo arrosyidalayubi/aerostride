@@ -54,9 +54,9 @@ export default function Navbar({
               onClick={() => onViewChange('store')} 
               className="shrink-0 flex items-center cursor-pointer"
             >
-              <span className="font-black text-2xl tracking-tighter text-black uppercase">
-                AeroStride
-              </span>
+              <a href="/" className="flex items-center gap-2">
+                <img src="/logo-aerostride-hitam.png" alt="Logo AeroStride" className="h-8 object-contain" />
+              </a>
             </div>
           </div>
 

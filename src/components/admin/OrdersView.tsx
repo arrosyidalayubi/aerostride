@@ -24,6 +24,7 @@ export default function OrdersView({ orders, onUpdateOrders }: OrdersViewProps) 
         <table className="w-full text-left min-w-150">
           <thead>
             <tr className="border-b border-gray-100 text-gray-400 text-xs font-bold uppercase">
+              <th className="pb-3">Tanggal</th>
               <th className="pb-3">ID Pesanan</th>
               <th className="pb-3">Pembeli</th>
               <th className="pb-3">Item</th>
@@ -36,6 +37,7 @@ export default function OrdersView({ orders, onUpdateOrders }: OrdersViewProps) 
             {orders.map(o => (
               <tr key={o.id}>
                 <td className="py-4 font-mono text-gray-400 font-bold">{o.id}</td>
+                <td className="py-4 font-bold text-gray-700">{o.date}</td>
                 <td className="py-4 font-bold">{o.customerName}</td>
                 <td className="py-4 text-xs text-gray-600">
                   {o.items.map((i, idx) => <div key={idx}>{i.productName} (x{i.qty})</div>)}

@@ -13,6 +13,7 @@ interface AdminDashboardProps {
   offlineSales: OfflineSale[];
   customers: CustomerData[];
   dailySales: DailySale[];
+  onUpdateDailySales: (sales: DailySale[]) => void;
   onUpdateProducts: (products: Product[]) => void;
   onUpdateOrders: (orders: Order[]) => void;
   onUpdateOfflineSales: (sales: OfflineSale[]) => void;
@@ -21,7 +22,7 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({
   activeMenu, products, orders, offlineSales, customers, dailySales,
-  onUpdateProducts, onUpdateOrders, onUpdateOfflineSales, onUpdateCustomers
+  onUpdateProducts, onUpdateOrders, onUpdateOfflineSales, onUpdateCustomers, onUpdateDailySales
 }: AdminDashboardProps) {
   
   return (
@@ -33,7 +34,7 @@ export default function AdminDashboard({
         )}
 
         {activeMenu === 'harian' && (
-          <DailySalesView dailySales={dailySales} />
+         <DailySalesView dailySales={dailySales} onUpdateDailySales={onUpdateDailySales} />
         )}
 
         {activeMenu === 'offline' && (

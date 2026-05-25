@@ -67,7 +67,7 @@ export function useAppData() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sku: targetSku, qty: 1, orderId: `TRX-ONL-${Date.now()}`, 
-          customerName: user.name, totalAmount: targetProduct.price, date: '23 Mei'
+          customerName: user.name, totalAmount: targetProduct.price, date: `${String(new Date().getDate()).padStart(2, '0')}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${new Date().getFullYear()}`
         })
       });
 

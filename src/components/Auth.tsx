@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, Phone } from 'lucide-react';
 
 interface AuthProps {
   onLoginSuccess: (user: { name: string; role: 'admin' | 'customer' }) => void;
@@ -11,16 +11,65 @@ export default function Auth({ onLoginSuccess, onClose }: AuthProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Simulasi Validasi Akun Taktikal untuk Demonstrasi Dosen
-    if (email === 'admin@aerostride.id' && password === 'admin123') {
-      onLoginSuccess({ name: 'Administrator Eksekutif', role: 'admin' });
-    } else {
-      // Default sebagai customer biasa jika menginput data lain
-      onLoginSuccess({ name: name || 'Pelanggan Setia', role: 'customer' });
+    try {
+      // Tembak data form ke Satpam API kita
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: password }) // Pastikan state email & password Anda benar
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        // SUKSES! Masukkan data user asli ke sistem
+        onLoginSuccess(data.user);
+      } else {
+        // GAGAL LOGIN
+        alert(data.error || 'Login gagal');
+      }
+    } catch {
+      alert('Gagal terhubung ke server autentikasi.');
+    }
+  };
+
+  // Fungsi khusus untuk tab DAFTAR
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Buat ID Customer acak (contoh: CUST-4829)
+    const newId = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    try {
+      // Tembak ke API Customers untuk menambah data
+      const res = await fetch('/api/customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: newId,
+          name: name,       // Sesuaikan dengan nama state form nama Anda
+          email: email,     // Sesuaikan dengan nama state form email Anda
+          password: password, // Sesuaikan dengan nama state form password Anda
+          phone: phone                // Kosongkan atau isi default karena di form tidak ada no HP
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        alert('Registrasi berhasil! Silakan masuk menggunakan akun baru Anda.');
+        // (Opsional) Ubah state tab aktif kembali ke 'login' agar user bisa langsung masuk
+        setIsLoginTab(true);
+      } else {
+        alert(data.error || 'Gagal melakukan pendaftaran.');
+      }
+    } catch {
+      alert('Gagal terhubung ke server pendaftaran.');
     }
   };
 
@@ -58,21 +107,40 @@ export default function Auth({ onLoginSuccess, onClose }: AuthProps) {
         </div>
 
         {/* Form Inputs */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={isLoginTab ? handleSubmit : handleRegister} className="space-y-4">
+          
+          {/* HANYA MUNCUL SAAT TAB DAFTAR AKTIF */}
           {!isLoginTab && (
-            <div className="relative">
-              <input 
-                type="text" 
-                placeholder="Nama Lengkap" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none focus:border-black focus:bg-white transition-all"
-                required
-              />
-              <User className="w-4 h-4 text-gray-400 absolute left-4 top-4" />
-            </div>
+            <>
+              {/* Input Nama Lengkap */}
+              <div className="relative">
+                <input 
+                  type="text" 
+                  placeholder="Nama Lengkap" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none focus:border-black focus:bg-white transition-all"
+                  required
+                />
+                <User className="w-4 h-4 text-gray-400 absolute left-4 top-4" />
+              </div>
+
+              {/* Input Nomor HP */}
+              <div className="relative">
+                <input 
+                  type="tel" 
+                  placeholder="Nomor HP (WhatsApp)" 
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl py-3.5 pl-11 pr-4 text-sm outline-none focus:border-black focus:bg-white transition-all"
+                  required
+                />
+                <Phone className="w-4 h-4 text-gray-400 absolute left-4 top-4" />
+              </div>
+            </>
           )}
 
+          {/* MUNCUL DI KEDUA TAB (MASUK & DAFTAR) */}
           <div className="relative">
             <input 
               type="email" 
@@ -97,6 +165,7 @@ export default function Auth({ onLoginSuccess, onClose }: AuthProps) {
             <Lock className="w-4 h-4 text-gray-400 absolute left-4 top-4" />
           </div>
 
+          {/* HANYA MUNCUL SAAT TAB MASUK AKTIF */}
           {isLoginTab && (
             <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-[11px] text-gray-500 leading-relaxed">
               💡 <strong>Demo Kredensial Admin:</strong><br />
