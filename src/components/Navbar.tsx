@@ -9,16 +9,18 @@ interface NavbarProps {
   onViewChange: (view: 'store' | 'admin' | 'customer') => void;
   user: { name: string; role: 'admin' | 'customer' } | null;
   onLogout: () => void;
+  cartItemCount: number;
 }
 
 
 export default function Navbar({ 
-  onOpenCart, 
   onOpenAuth, 
   currentView, 
   onViewChange, 
   user, 
-  onLogout 
+  onLogout ,
+  cartItemCount, 
+  onOpenCart
 }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // State untuk mengontrol visibilitas dropdown profil internal
@@ -146,12 +148,14 @@ export default function Navbar({
             </div>
             
             {/* Shopping Cart Button */}
-            <button onClick={onOpenCart} className="text-gray-900 hover:text-gray-500 transition-colors relative group cursor-pointer">
-              <ShoppingBag className="w-5 h-5" />
-              <span className="absolute -top-1.5 -right-1.5 bg-brand-accent text-white text-[9px] font-bold h-4 w-4 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                2
-              </span>
-            </button>
+            <button onClick={onOpenCart} className="relative p-2 text-gray-600 hover:text-black transition-colors cursor-pointer">
+          <ShoppingBag className="w-6 h-6" />
+          {cartItemCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center animate-bounce shadow-md">
+              {cartItemCount}
+            </span>
+          )}
+        </button>
           </div>
         </div>
       </div>

@@ -1,83 +1,76 @@
-import { X, ShoppingBag, ArrowRight } from 'lucide-react';
+import { X, ArrowRight, Trash2 } from 'lucide-react';
+import type { CartItem } from '../hooks/useAppData'; // Sesuaikan path import
 
-// Props definition
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  cart: CartItem[];
+  updateCartQty: (id: string, amount: number) => void;
+  removeFromCart: (id: string) => void;
   onCheckout: () => void;
 }
 
-export default function CartDrawer({ isOpen, onClose, onCheckout }: CartDrawerProps) {
-  // Simulasi state keranjang
-  const cartItems = [
-    { id: 1, name: "Aero X-1 Urban", size: "42", price: 1250000, qty: 1, image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=200&auto=format&fit=crop" },
-    { id: 2, name: "Aero Lite Transit", size: "39", price: 950000, qty: 1, image: "https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=200&auto=format&fit=crop" }
-  ];
+export default function CartDrawer({ isOpen, onClose, cart, removeFromCart, updateCartQty, onCheckout }: CartDrawerProps) {
+  if (!isOpen) return null;
 
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
   return (
-    <>
-      {/* Overlay Gelap */}
-      <div 
-        className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-60 transition-opacity duration-300 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
-        onClick={onClose}
-      />
-
-      {/* Slide Over Panel */}
-      <div className={`fixed inset-y-0 right-0 z-70 w-full max-w-md bg-white shadow-2xl transform transition-transform duration-500 ease-in-out flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-        
-        {/* Cart Header */}
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-gray-900">
-            <ShoppingBag className="w-5 h-5" />
-            <h2 className="text-lg font-black tracking-tighter uppercase">Keranjang (2)</h2>
-          </div>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-black transition-colors rounded-full hover:bg-gray-100">
-            <X className="w-5 h-5" />
-          </button>
+    <div className="fixed inset-0 z-50 flex justify-end">
+      {/* Background Overlay */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      
+      {/* Panel Keranjang */}
+      <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+        <div className="p-6 flex justify-between items-center border-b border-gray-100">
+          <h2 className="text-xl font-black uppercase">Keranjang ({cart.reduce((a, b) => a + b.qty, 0)})</h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full"><X className="w-5 h-5" /></button>
         </div>
 
-        {/* Cart Items Area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {cartItems.map((item) => (
-            <div key={item.id} className="flex gap-4">
-              <div className="w-24 h-24 bg-gray-50 rounded-xl overflow-hidden shrink-0">
-                <img src={item.image} alt={item.name} className="w-full h-full object-cover mix-blend-multiply" />
-              </div>
-              <div className="flex-1 flex flex-col justify-between py-1">
-                <div>
-                  <h3 className="font-bold text-gray-900">{item.name}</h3>
-                  <p className="text-sm text-gray-500">Size: {item.size}</p>
-                </div>
-                <div className="flex justify-between items-end">
-                  <p className="font-bold text-sm">
-                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(item.price)}
-                  </p>
-                  <div className="flex items-center border border-gray-200 rounded-lg">
-                    <button className="px-2 py-1 text-gray-500 hover:text-black">-</button>
-                    <span className="px-2 text-sm font-bold">{item.qty}</span>
-                    <button className="px-2 py-1 text-gray-500 hover:text-black">+</button>
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          {cart.length === 0 ? (
+            <p className="text-center text-gray-500 mt-10">Keranjang Anda masih kosong.</p>
+          ) : (
+            cart.map(item => (
+              <div key={item.id} className="flex items-center gap-4 bg-gray-50 p-3 rounded-2xl border border-gray-100">
+                <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-xl bg-white" />
+                <div className="flex-1">
+                  <h4 className="font-bold text-sm">{item.name}</h4>
+                  <p className="text-xs font-bold text-gray-500 mt-1">Rp {item.price.toLocaleString('id-ID')}</p>
+
+                  <button 
+                      onClick={() => removeFromCart(item.id)} 
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Hapus Barang"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                  </button>
+
+                  <div className="flex items-center gap-2 mt-2">
+                    <button onClick={() => updateCartQty(item.id, -1)} className="w-6 h-6 bg-white border border-gray-200 rounded-md text-xs font-bold hover:bg-gray-100">-</button>
+                    <span className="text-xs font-bold w-4 text-center">{item.qty}</span>
+                    <button onClick={() => updateCartQty(item.id, 1)} className="w-6 h-6 bg-white border border-gray-200 rounded-md text-xs font-bold hover:bg-gray-100">+</button>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
-        {/* Cart Footer / Checkout Area */}
-        <div className="border-t border-gray-100 p-6 bg-gray-50">
-          <div className="flex justify-between text-gray-900 mb-4 font-bold text-lg">
-            <span>Subtotal</span>
-            <span>{new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(subtotal)}</span>
+        <div className="p-6 border-t border-gray-100 bg-gray-50">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-sm font-medium text-gray-500">Subtotal</span>
+            <span className="text-xl font-black">Rp {subtotal.toLocaleString('id-ID')}</span>
           </div>
-          <p className="text-xs text-gray-500 mb-6">Pajak dan ongkos kirim dihitung saat checkout.</p>
-          <button onClick={onCheckout} className="w-full bg-black text-white py-4 rounded-full font-bold text-lg hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 cursor-pointer">
-            Lanjut Ke Pembayaran
-            <ArrowRight className="w-5 h-5" />
-        </button>
+          <button 
+            onClick={onCheckout}
+            disabled={cart.length === 0}
+            className="w-full bg-black text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Lanjut Pembayaran <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
-    </>
+    </div>
   );
 }

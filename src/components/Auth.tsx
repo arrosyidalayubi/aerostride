@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Mail, Lock, User, ArrowRight, Phone } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface AuthProps {
   onLoginSuccess: (user: { name: string; role: 'admin' | 'customer' }) => void;
@@ -31,10 +32,10 @@ export default function Auth({ onLoginSuccess, onClose }: AuthProps) {
         onLoginSuccess(data.user);
       } else {
         // GAGAL LOGIN
-        alert(data.error || 'Login gagal');
+        toast.error(data.error || 'Login gagal');
       }
     } catch {
-      alert('Gagal terhubung ke server autentikasi.');
+      toast.error('Gagal terhubung ke server autentikasi.');
     }
   };
 
@@ -62,14 +63,14 @@ export default function Auth({ onLoginSuccess, onClose }: AuthProps) {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        alert('Registrasi berhasil! Silakan masuk menggunakan akun baru Anda.');
+        toast.success('Registrasi berhasil! Silakan masuk menggunakan akun baru Anda.');
         // (Opsional) Ubah state tab aktif kembali ke 'login' agar user bisa langsung masuk
         setIsLoginTab(true);
       } else {
-        alert(data.error || 'Gagal melakukan pendaftaran.');
+        toast.error(data.error || 'Gagal melakukan pendaftaran.');
       }
     } catch {
-      alert('Gagal terhubung ke server pendaftaran.');
+      toast.error('Gagal terhubung ke server pendaftaran.');
     }
   };
 

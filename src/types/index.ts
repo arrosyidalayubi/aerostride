@@ -8,6 +8,7 @@ export interface Product {
   threshold: number;
   status: 'In Stock' | 'Low Stock' | 'Critical';
   image: string;
+  isNew?: boolean;
 }
 
 export interface Order {

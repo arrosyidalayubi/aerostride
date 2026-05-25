@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Plus, Trash2, Users, Mail, Phone, User, X } from 'lucide-react';
 import type { CustomerData } from '../../types';
+import toast from 'react-hot-toast';
 
 interface CustomersViewProps {
   customers: CustomerData[];
@@ -34,9 +35,9 @@ export default function CustomersView({ customers, onUpdateCustomers }: Customer
       onUpdateCustomers([newCustomer, ...customers]);
       setNewCustName(''); setNewCustEmail(''); setNewCustPhone('');
       setIsCustModalOpen(false);
-      alert('Berhasil! Data pelanggan disimpan permanen di Database D1.');
+      toast.success('Berhasil! Data pelanggan disimpan permanen di Database D1.');
     } catch (error) {
-      alert('Kesalahan koneksi database: ' + error);
+      toast.error('Kesalahan koneksi database: ' + error);
     }
   };
 
@@ -55,10 +56,9 @@ export default function CustomersView({ customers, onUpdateCustomers }: Customer
 
       // Update UI dengan menghilangkan data yang dihapus
       onUpdateCustomers(customers.filter(cust => cust.id !== id));
-      
-      alert('Data pelanggan berhasil dihapus secara permanen dari Database D1!');
+      toast.success('Data pelanggan berhasil dihapus secara permanen dari Database D1!');
     } catch (error) {
-      alert('Terjadi kesalahan saat menghapus data: ' + error);
+      toast.error('Terjadi kesalahan saat menghapus data: ' + error);
     }
   };
 

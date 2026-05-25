@@ -9,8 +9,9 @@ import AdminSidebar from './components/AdminSidebar';
 import CustomerDashboard from './components/CustomerDashboard';
 import CartDrawer from './components/CartDrawer';
 import Auth from './components/Auth';
-import { useAppData } from './hooks/useAppData'; // Import Otak Data
+import { useAppData } from './hooks/useAppData';
 import { Menu } from 'lucide-react';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function App() {
   
@@ -28,7 +29,7 @@ export default function App() {
   const { 
     user, setUser, products, setProducts, orders, setOrders, 
     offlineSales, setOfflineSales, customers, setCustomers, 
-    dailySales, handleOnlineCheckout ,setDailySales
+    dailySales ,setDailySales, cart, addToCart, updateCartQty, removeFromCart, handleActualCheckout
   } = useAppData();
 
   // 2. Simpan setiap perubahan 'currentView' ke sessionStorage
@@ -41,37 +42,38 @@ export default function App() {
     setCurrentView('store');
     sessionStorage.removeItem('aero_user');
     sessionStorage.removeItem('aero_view');
-  }; useAppData();
+  };
 
   const handleViewChange = (view: 'store' | 'admin' | 'customer') => {
     if (view === 'admin' && (!user || user.role !== 'admin')) {
       setIsAuthModalOpen(true);
-      alert('Akses Terbatas: Sila login dengan Akun Admin.');
+      toast.error('Akses Terbatas: Sila login dengan Akun Admin.');
       return;
     }
     setCurrentView(view);
   };
 
-  const executeCheckout = () => {
-    handleOnlineCheckout(
-      () => { // Callback Sukses
-        alert('Pembayaran Berhasil! Sistem pusat telah mencatat transaksi Anda.');
-        setIsCartOpen(false);
-        setCurrentView('customer');
-      },
-      (errorMsg) => { // Callback Error
-        setIsCartOpen(false);
-        if (errorMsg.includes('Autentikasi')) setIsAuthModalOpen(true);
-        alert(errorMsg);
-      }
-    );
-  };
-
   return (
     <div className="min-h-screen bg-white text-gray-900 relative">
+
+      <Toaster 
+      position="top-center"
+      toastOptions={{
+        style: {
+          background: '#111827',
+          color: '#fff',
+          borderRadius: '16px',
+          fontWeight: 'bold',
+          padding: '16px 24px',
+        },
+        success: { iconTheme: { primary: '#10B981', secondary: '#fff' } },
+        error: { iconTheme: { primary: '#EF4444', secondary: '#fff' } },
+      }}
+    />
       
       {currentView !== 'admin' && (
         <Navbar 
+          cartItemCount={cart.reduce((sum, item) => sum + item.qty, 0)}  
           onOpenCart={() => setIsCartOpen(true)}
           onOpenAuth={() => setIsAuthModalOpen(true)}
           currentView={currentView === 'store' ? 'store' : 'admin'}
@@ -80,6 +82,25 @@ export default function App() {
           onLogout={handleLogout}
         />
       )}
+
+      <CartDrawer 
+      isOpen={isCartOpen} 
+      onClose={() => setIsCartOpen(false)} 
+      cart={cart} 
+      updateCartQty={updateCartQty} 
+      removeFromCart={removeFromCart}
+      onCheckout={() => {
+          if (!user) {
+            // Jika belum login: Beri peringatan, tutup keranjang, buka popup login
+            toast.error('Silakan Masuk atau Daftar terlebih dahulu untuk melakukan pembayaran.');
+            setIsCartOpen(false);
+            setIsAuthModalOpen(true);
+          } else {
+            // Jika sudah login: Lanjutkan ke API
+            handleActualCheckout(user);
+          }
+        }} 
+    />
 
       {currentView === 'admin' && (
         <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-gray-900 text-white flex items-center justify-between px-4 z-40 shadow-md">
@@ -92,7 +113,7 @@ export default function App() {
       )}
 
       {currentView === 'store' && (
-        <><main className="pt-16"><Hero /><FeaturedProducts /><Testimonials /></main><Footer /></>
+        <><main className="pt-16"><Hero /><FeaturedProducts products={products} onAddToCart={addToCart} /><Testimonials /></main><Footer /></>
       )}
 
       {currentView === 'customer' && (
@@ -124,7 +145,6 @@ export default function App() {
         </div>
       )}
 
-      <CartDrawer isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onCheckout={executeCheckout} />
       {isAuthModalOpen && <Auth onLoginSuccess={(u) => { setUser(u); setIsAuthModalOpen(false); if(u.role === 'admin') setCurrentView('admin'); else setCurrentView('customer'); }} onClose={() => setIsAuthModalOpen(false)} />}
     </div>
   );
