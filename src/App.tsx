@@ -9,6 +9,7 @@ import AdminSidebar from './components/AdminSidebar';
 import CustomerDashboard from './components/CustomerDashboard';
 import CartDrawer from './components/CartDrawer';
 import Auth from './components/Auth';
+import CatalogView from './components/CatalogView';
 import { useAppData } from './hooks/useAppData';
 import { Menu } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
@@ -17,9 +18,9 @@ export default function App() {
   
   
   // 1. Inisialisasi state dengan membaca sessionStorage (jika ada, pakai itu; jika tidak, default ke 'store')
-  const [currentView, setCurrentView] = useState<'store' | 'admin' | 'customer'>(() => {
-    return (sessionStorage.getItem('aero_view') as 'store' | 'admin' | 'customer') || 'store';
-  });
+  const [currentView, setCurrentView] = useState<'store' | 'catalog' | 'admin' | 'customer'>(() => {
+  return (sessionStorage.getItem('aero_view') as 'store' | 'catalog' | 'admin' | 'customer') || 'store';
+});
 
   const [activeAdminMenu, setActiveAdminMenu] = useState('ringkasan');
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -113,7 +114,23 @@ export default function App() {
       )}
 
       {currentView === 'store' && (
-        <><main className="pt-16"><Hero /><FeaturedProducts products={products} onAddToCart={addToCart} /><Testimonials /></main><Footer /></>
+        <>
+        <main className="pt-16">
+        <Hero onViewChange={setCurrentView} />
+        <FeaturedProducts products={products} onAddToCart={addToCart} onViewAll={() => setCurrentView('catalog')} />
+        <Testimonials />
+        </main>
+        <Footer />
+        </>
+      )}
+
+      {currentView === 'catalog' && (
+        <>
+        <main className="pt-24 bg-gray-50 min-h-screen">
+        <CatalogView products={products} onAddToCart={addToCart} onBackToStore={() => setCurrentView('store')} />
+        </main>
+        <Footer />
+        </>
       )}
 
       {currentView === 'customer' && (

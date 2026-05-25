@@ -5,9 +5,10 @@ import type { Product } from '../types';
 interface FeaturedProductsProps {
   products: Product[];
   onAddToCart: (product: Product) => void;
+  onViewAll: () => void;
 }
 
-export default function FeaturedProducts({ products, onAddToCart }: FeaturedProductsProps) {
+export default function FeaturedProducts({ products, onAddToCart, onViewAll }: FeaturedProductsProps) {
   // State untuk menyimpan produk mana yang sedang diklik untuk dilihat detailnya
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -32,6 +33,12 @@ export default function FeaturedProducts({ products, onAddToCart }: FeaturedProd
               <h2 className="text-4xl font-black text-gray-900 tracking-tighter uppercase">Gear Pilihan</h2>
               <p className="mt-2 text-gray-500 font-medium">Dirancang khusus untuk menaklukkan cuaca kota.</p>
             </div>
+            <button 
+              onClick={onViewAll} 
+              className="hidden sm:block text-sm font-bold text-gray-900 border-b-2 border-black pb-1 hover:text-gray-500 hover:border-gray-500 transition-colors cursor-pointer"
+            >
+              Lihat Semua Produk
+            </button>
           </div>
 
           {!products || products.length === 0 ? (

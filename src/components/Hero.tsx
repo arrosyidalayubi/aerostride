@@ -1,6 +1,8 @@
-import { ArrowRight } from 'lucide-react';
+interface HeroProps {
+  onViewChange: (view: 'store' | 'catalog' | 'admin' | 'customer') => void;
+}
 
-export default function Hero() {
+export default function Hero({ onViewChange }: HeroProps) {
   return (
     // min-h-[calc(100vh-4rem)] memastikan hero section memenuhi layar dikurangi tinggi navbar (16 = 4rem)
     <section className="relative w-full min-h-[calc(100vh-4rem)] flex items-center bg-[#f8f9fa] overflow-hidden">
@@ -31,15 +33,32 @@ export default function Hero() {
               </p>
             </div>
 
-            {/* Area Tombol */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button className="flex items-center justify-center gap-2 px-8 py-4 bg-black text-white rounded-full font-bold text-lg hover:bg-gray-800 hover:scale-105 transition-all duration-300 shadow-xl shadow-black/10 cursor-pointer">
-                Beli Sekarang <ArrowRight className="w-5 h-5" />
-              </button>
-              <button className="flex items-center justify-center px-8 py-4 bg-white text-black border-2 border-gray-200 rounded-full font-bold text-lg hover:border-black transition-all duration-300 cursor-pointer">
-                Lihat Katalog
-              </button>
-            </div>
+            {/* Grup Tombol Hero */}
+        <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+          
+          {/* PRIMARY CTA: Beli Sekarang */}
+          <a 
+            href="#produk" 
+            className="group relative inline-flex items-center justify-center px-8 py-4 text-sm font-black text-white uppercase tracking-widest bg-black rounded-xl overflow-hidden transition-all hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(0,0,0,0.5)] active:scale-95"
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              Beli Sekarang 
+              {/* Ikon panah yang bergeser saat di-hover */}
+              <svg className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </span>
+            {/* Efek kilap (shine) yang melintas saat di-hover */}
+            <div className="absolute inset-0 h-full w-full bg-linear-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+          </a>
+
+          {/* SECONDARY CTA: Lihat Katalog */}
+          {/* Opsional: Anda bisa membuat ID #kategori nanti di bawah FeaturedProducts */}
+          <button onClick={() => onViewChange('catalog')} className="inline-flex items-center justify-center px-8 py-4 text-sm font-black text-gray-900 uppercase tracking-widest border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all active:scale-95 cursor-pointer">
+            Lihat Katalog
+          </button>
+
+        </div>
             
             {/* Social Proof / Metrik Bisnis */}
             <div className="pt-8 flex items-center gap-8 border-t border-gray-200/60 mt-4">
