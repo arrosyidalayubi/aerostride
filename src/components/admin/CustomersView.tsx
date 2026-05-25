@@ -13,6 +13,9 @@ export default function CustomersView({ customers, onUpdateCustomers }: Customer
   const [newCustEmail, setNewCustEmail] = useState('');
   const [newCustPhone, setNewCustPhone] = useState('');
 
+  // ==========================================
+  // FUNGSI TAMBAH PELANGGAN
+  // ==========================================
   const handleAddCustomer = async (e: React.FormEvent) => {
     e.preventDefault();
     const newId = `CUST-00${customers.length + 1}`;
@@ -27,6 +30,7 @@ export default function CustomersView({ customers, onUpdateCustomers }: Customer
         body: JSON.stringify(newCustomer)
       });
       if (!response.ok) throw new Error('Gagal menyimpan ke server D1');
+      
       onUpdateCustomers([newCustomer, ...customers]);
       setNewCustName(''); setNewCustEmail(''); setNewCustPhone('');
       setIsCustModalOpen(false);
@@ -36,8 +40,31 @@ export default function CustomersView({ customers, onUpdateCustomers }: Customer
     }
   };
 
+  // ==========================================
+  // FUNGSI HAPUS PELANGGAN PERMANEN (BARU)
+  // ==========================================
+  const handleDeleteCustomer = async (id: string) => {
+    if (!window.confirm(`Yakin ingin menghapus pelanggan dengan ID ${id} secara permanen?`)) return;
+
+    try {
+      const res = await fetch(`/api/customers?id=${id}`, { 
+        method: 'DELETE' 
+      });
+      
+      if (!res.ok) throw new Error('Gagal menghapus data dari server');
+
+      // Update UI dengan menghilangkan data yang dihapus
+      onUpdateCustomers(customers.filter(cust => cust.id !== id));
+      
+      alert('Data pelanggan berhasil dihapus secara permanen dari Database D1!');
+    } catch (error) {
+      alert('Terjadi kesalahan saat menghapus data: ' + error);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-black text-gray-900 tracking-tighter uppercase">Manajemen Pelanggan</h1>
@@ -51,6 +78,7 @@ export default function CustomersView({ customers, onUpdateCustomers }: Customer
         </button>
       </div>
 
+      {/* TABEL DATA */}
       <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm overflow-x-auto">
         <table className="w-full text-left min-w-150">
           <thead>
@@ -73,9 +101,11 @@ export default function CustomersView({ customers, onUpdateCustomers }: Customer
                 </td>
                 <td className="py-4 text-gray-600">{c.joinDate}</td>
                 <td className="py-4 text-right">
+                  {/* TOMBOL HAPUS YANG SUDAH DIPERBAIKI */}
                   <button 
-                    onClick={() => onUpdateCustomers(customers.filter(cust => cust.id !== c.id))}
+                    onClick={() => handleDeleteCustomer(c.id)}
                     className="p-2 text-gray-400 hover:text-red-600 rounded-xl transition-colors cursor-pointer"
+                    title="Hapus Pelanggan"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -86,7 +116,7 @@ export default function CustomersView({ customers, onUpdateCustomers }: Customer
         </table>
       </div>
 
-      {/* POPUP MODAL */}
+      {/* POPUP MODAL TAMBAH PELANGGAN */}
       {isCustModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-110 flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl border border-gray-100 relative animate-in fade-in zoom-in-95 duration-200">
